@@ -1,0 +1,4 @@
+com\wei\boot\example\Example.class
+com\wei\boot\example\RandomController.class
+com\wei\boot\Application.class
+com\wei\boot\bean\DataSourceProperty.class
