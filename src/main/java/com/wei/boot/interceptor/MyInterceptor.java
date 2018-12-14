@@ -20,6 +20,7 @@ public class MyInterceptor implements HandlerInterceptor {
 			throws Exception {
 		// TODO Auto-generated method stub
 		System.out.println("退出拦截器.....................");
+		System.out.println("xxxx");
 	}
 
 	@Override

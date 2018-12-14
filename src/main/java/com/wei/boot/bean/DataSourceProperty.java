@@ -65,5 +65,7 @@ public class DataSourceProperty implements Serializable {
 		this.maxActive = maxActive;
 	}
 	
-	
+	public static void main(String[] args) {
+		System.out.println("a".contains(null));
+	}
 }
