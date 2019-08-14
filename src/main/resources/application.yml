@@ -1,5 +1,5 @@
 server:
-  port: 80
+  port: 8080
 my:
   secret: ${random.value}
   bignumber: ${random.long}
@@ -24,7 +24,10 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 #    validation-query: SELECT 1
 #    test-on-borrow: true
+  rabbitmq:
+    host: 47.97.100.29
+    port: 5672
+    username: weisihua
+    password: weisihua
 
-#log things
-logging:
-  file: springboot.log
+
