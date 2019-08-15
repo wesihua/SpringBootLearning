@@ -1,4 +1,4 @@
-package com.wei.boot.netty.wrongMsg;
+package com.wei.boot.netty.unlineStream;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -7,7 +7,6 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import sun.nio.cs.ext.MS874;
 
 /**
  * @Description:
