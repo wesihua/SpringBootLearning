@@ -1,4 +1,4 @@
-package com.wei.boot.netty;
+package com.wei.boot.netty.wrongMsg;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
@@ -11,9 +11,9 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.util.Date;
 
 /**
- * @Description: netty服务端
+ * @Description:
  * @Author: weisihua
- * @Date: 2019-08-15 10:35
+ * @Date: 2019-08-15 14:48
  **/
 public class TimeServer {
 
@@ -22,56 +22,52 @@ public class TimeServer {
     }
 
     public void bind(int port) throws Exception {
-        /*
-         * 配置服务端线程组
-         * NioEventLoopGroup 是个线程组，包含了一组NIO线程，实际上它们就是Reactor线程组
-         * boss用于接收客户端连接
-         * worker用于进行SocketChannel网络读写
-         */
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
-            // 用于启动NIO服务端的辅助启动类
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-                    // NioServerSocketChannel 对应于 java nio 类库中的 ServerSocketChannel
                     .channel(NioServerSocketChannel.class)
-                    // 设置tcp参数
                     .option(ChannelOption.SO_BACKLOG, 1024)
-                    // 绑定I/O事件的处理类
-                    .childHandler(new ChildChannelHandler());
-            // 绑定端口，并同步等待成功
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel serverSocketChannel) throws Exception {
+                            serverSocketChannel.pipeline().addLast(new TimeServerHandler());
+                        }
+                    });
             ChannelFuture f = b.bind(port).sync();
-
-            // 等待服务端监听端口关闭
             f.channel().closeFuture().sync();
         } finally {
-
-            // 优雅退出，释放线程池资源
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
     }
 
-    private class ChildChannelHandler extends ChannelInitializer<SocketChannel> {
-        @Override
-        protected void initChannel(SocketChannel socketChannel) throws Exception {
-            socketChannel.pipeline().addLast(new TimeServerHandler());
-        }
-    }
-
+    /**
+     * 服务端处理器
+     */
     private class TimeServerHandler extends ChannelHandlerAdapter{
+
+        private int counter;
+
+        /**
+         * channel收到数据流时处理方法
+         * @param ctx
+         * @param msg
+         * @throws Exception
+         */
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             ByteBuf buf = (ByteBuf) msg;
-            byte[] req = new byte[buf.readableBytes()];
-            buf.readBytes(req);
-            String body = new String(req, "utf-8");
-            System.out.println(">>>>>>>>>>>>>>>>The time server receive order : " + body);
+            byte[] request = new byte[buf.readableBytes()];
+            buf.readBytes(request);
+            int index = request.length - System.getProperty("line.separator").length();
+            String body = new String(request, "utf-8").substring(0, index);
+            System.out.println(">>>>>>>>>>>>>>>>The time server receive order : " + body + " ; the counter is : " + ++counter);
             String currentTime = "QUERY TIME ORDER".equalsIgnoreCase(body) ? new Date().toString() : "BAD ORDER";
-            // 返回值
+            currentTime = currentTime + System.getProperty("line.separator");
             ByteBuf resp = Unpooled.copiedBuffer(currentTime.getBytes());
-            ctx.write(resp);
+            ctx.writeAndFlush(resp);
         }
 
         @Override
